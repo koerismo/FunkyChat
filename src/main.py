@@ -57,21 +57,26 @@ class CommunicationHandler():
 		if self.server:
 			self.server.send_message_to_all(json.dumps({
 				'username': localuser['name'],
-				'message': msg
+				'message': msg,
+				'type': 'message'
 			}))
 		else:
 			self.client.send( json.dumps({
 				'username': localuser['name'],
-				'message': msg
+				'message': msg,
+				'type': 'message'
 			}))
 
 	def initListener( self ):
-		
+
 		def onMessage( ws, msg ):
 			cL.logSpec('[SOCKET]', f'Message received: {msg}')
 			try:
 				j = json.loads(msg)
-				window.appendMessageToBox( j['username'], j['message'] )
+				if ( j['type'] == 'message' ):
+					window.appendMessageToBox( j['username'], j['message'] )
+				if ( j['type'] == 'welcome' ):
+					window.appendUserJoinMessage( j['username'] )
 			except BaseException as e:
 				cL.logErr( '[SOCKET]', 'An error occurred while attempting to deserialize a message: ' + str(e) )
 
@@ -84,6 +89,10 @@ class CommunicationHandler():
 
 		def onOpen( ws ):
 			cL.logSpec('[SOCKET]', 'Connection opened.')
+			self.client.send( json.dumps({
+				'username': localuser['name'],
+				'type': 'welcome'
+			}) )
 
 		self.client = ws = websocket.WebSocketApp( f'ws://{localuser["server"]}:81', on_message=onMessage, on_error=onError, on_close=onClose, on_open=onOpen )
 
@@ -114,6 +123,21 @@ class ChatWindow(ChatWindowBase):
 		self.text_entry.Disable()
 		self.button_send.Disable()
 		self.SetTitle('FunkyChat - Connection Lost')
+
+		self.text_rich.BeginBold()
+		self.text_rich.BeginTextColour(wx.Colour(255,20,20))
+		self.text_rich.DoWriteText('Connection closed!')
+		self.text_rich.EndTextColour()
+		self.text_rich.EndBold()
+		self.text_rich.MoveEnd()
+
+	def appendUserJoinMessage( self, user ):
+		self.text_rich.BeginBold()
+		self.text_rich.BeginTextColour(wx.Colour(50,50,50))
+		self.text_rich.DoWriteText(f'\n{user} has joined the server!\n')
+		self.text_rich.EndTextColour()
+		self.text_rich.EndBold()
+		self.text_rich.MoveEnd()
 
 	def appendMessageToBox( self, author, txt ):
 		self.text_rich.BeginBold()
