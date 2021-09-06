@@ -2,19 +2,17 @@ from ui import FunkyChatWindow as ChatWindowBase
 import cLogging as cL
 import wx
 from uuid import uuid4
-
-import asyncio
+import json
 from threading import Thread
-import websockets
-import socket
+from websocket_server import WebsocketServer
 
-user = {}
+localuser = {}
 def initUser():
-	global user
+	global localuser
 
 	server = input('Enter a server address to connect to. If there is not yet a server active, enter nothing.\n| ')
 
-	user = {
+	localuser = {
 		'server': server,
 		'name': f'User {uuid4().hex.upper()}'
 	}
@@ -22,28 +20,35 @@ def initUser():
 class CommunicationHandler():
 	def __init__( self, addr ):
 		if len(addr):
-			self.startListener()
+			self.initListener()
 		else:
-			self.startServer()
+			self.initServer()
 
-	def startServer( self ):
-		async def serve(connection, path):
-			message = await connection.recv()
-			print(f'{cL.LIGHT_WHITE}[SOCKET]{cL.LIGHT_GRAY}Received: {message}{cL.RESET}')
-			await connection.send('gaming')
+	def initServer( self ):
 
-		startServer = websockets.serve( serve, "localhost", 81 )
-		cL.logSucc('[SOCKET]',f'Hosting server on {socket.gethostbyname(socket.gethostname())}:81')
+		def onMessage( con, serv, msg ):
+			cL.logSucc('[SOCKET]','Received message: ' + msg)
 
-		def setupServer():
-			loop = asyncio.new_event_loop()
-			loop.run_until_complete(startServer)
-			loop.run_forever()
+		def onConnection( con, serv ):
+			cL.logSucc('[SOCKET]','New connection')
 
-		self.thread = Thread(target=setupServer)
-		self.thread.start()
+		self.server = WebsocketServer( 81, host='127.0.0.1' )
+		self.server.set_fn_new_client(onConnection)
+		self.server.set_fn_message_received(onMessage)
+		#self.server.run_forever()
 
-	def startListener( self ):
+	def run( self ):
+		if ( self.server ):
+			cL.logSpec('[APP]', 'Initializing server...')
+			self.server.run_forever()
+
+	def sendMessage( self, msg ):
+		self.server.send_message_to_all(json.dumps({
+			'username': localuser['name'],
+			'message': msg
+		}))
+
+	def initListener( self ):
 		def onMessage( ws, msg ):
 			cL.logSpec('[SOCKET]', f'Message received: {msg}')
 		def onError( ws, err ):
@@ -65,7 +70,8 @@ class ChatWindow(ChatWindowBase):
 			return
 
 		self.text_entry.SetValue('')
-		self.appendMessageToBox(user['name'], txt)
+		self.appendMessageToBox(localuser['name'], txt)
+		socketHandler.sendMessage(txt)
 
 		cL.logSpec('[CHAT]', 'Message sent.')
 
@@ -92,14 +98,16 @@ cL.logSpec('[APP]', 'Initializing user info...')
 
 initUser()
 
-if not len(user['server']):
-	cL.logSpec('[APP]', 'Initializing server...')
-socketHandler = CommunicationHandler(user['server'])
+socketHandler = CommunicationHandler(localuser['server'])
 
 # Initialize window
-cL.logSpec('[APP]', 'Initializing window...')
 
-app = wx.App()
-window = ChatWindow(None)
-window.Show()
-app.MainLoop()
+def startApp():
+	cL.logSpec('[APP]', 'Initializing window...')
+	app = wx.App()
+	window = ChatWindow(None)
+	window.Show()
+	app.MainLoop()
+
+Thread(target=socketHandler.run,daemon=True).start()
+startApp()
