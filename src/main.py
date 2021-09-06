@@ -6,6 +6,7 @@ import json
 from threading import Thread
 from websocket_server import WebsocketServer
 import websocket
+import socket
 
 localuser = {}
 def initUser():
@@ -82,6 +83,7 @@ class ChatWindow(ChatWindowBase):
 	def __init__( self, parent ):
 		super().__init__( parent )
 		self.text_rich.SetFontScale(1.5)
+		self.SetFocus()
 
 	def updateMessage( self, event ):
 		txt = self.text_entry.GetValue()
@@ -130,5 +132,16 @@ Thread(target=socketHandler.run,daemon=True).start()
 cL.logSpec('[APP]', 'Initializing window...')
 app = wx.App()
 window = ChatWindow(None)
+
+if len(localuser['server']):
+	window.SetTitle('FunkyChat - Client')
+else:
+	address = None
+	try:
+		address = socket.gethostbyname(socket.gethostname())
+	except:
+		address = '(Address Unavailable)'
+	window.SetTitle('FunkyChat - Host - ' + address)
+
 window.Show()
 app.MainLoop()
