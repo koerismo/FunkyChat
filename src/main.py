@@ -35,12 +35,13 @@ class CommunicationHandler():
 		self.server = WebsocketServer( 81, host='127.0.0.1' )
 		self.server.set_fn_new_client(onConnection)
 		self.server.set_fn_message_received(onMessage)
-		#self.server.run_forever()
 
 	def run( self ):
 		if ( self.server ):
-			cL.logSpec('[APP]', 'Initializing server...')
+			cL.logSpec('[SOCKET]', 'Initializing server...')
 			self.server.run_forever()
+		if ( self.client ):
+			cL.logSpec('[SOCKET]', 'Initializing client...')
 
 	def sendMessage( self, msg ):
 		self.server.send_message_to_all(json.dumps({
@@ -49,6 +50,7 @@ class CommunicationHandler():
 		}))
 
 	def initListener( self ):
+		# self.client = simple_websocket.Client('ws://localhost:5000/echo')
 		def onMessage( ws, msg ):
 			cL.logSpec('[SOCKET]', f'Message received: {msg}')
 		def onError( ws, err ):
@@ -57,8 +59,13 @@ class CommunicationHandler():
 			cL.logSpec('[SOCKET]', 'Connection closed.')
 		def onOpen( ws ):
 			cL.logSpec('[SOCKET]', 'Connection opened.')
+		self.client = True
 
 class ChatWindow(ChatWindowBase):
+
+	def __init__( self, parent ):
+		super().__init__( parent )
+		self.text_rich.SetFontScale(1.5)
 
 	def updateMessage( self, event ):
 		txt = self.text_entry.GetValue()
