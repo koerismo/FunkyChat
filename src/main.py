@@ -34,7 +34,10 @@ class CommunicationHandler():
 			cL.logSpec('[SOCKET]', f'Message received: {msg}')
 			try:
 				j = json.loads(msg)
-				window.appendMessageToBox( j['username'], j['message'] )
+				if ( j['type'] == 'message' ):
+					window.appendMessageToBox( j['username'], j['message'] )
+				if ( j['type'] == 'welcome' ):
+					window.appendUserJoinMessage( j['username'] )
 			except BaseException as e:
 				cL.logErr( '[SOCKET]', 'An error occurred while attempting to deserialize a message: ' + str(e) )
 
