@@ -169,11 +169,11 @@ socketHandler = CommunicationHandler(localuser['server'])
 
 # Initialize window
 
-Thread(target=socketHandler.run,daemon=True).start()
-
 cL.logSpec('[APP]', 'Initializing window...')
 app = wx.App()
 window = ChatWindow(None)
+
+Thread(target=socketHandler.run,daemon=True).start()
 
 if len(localuser['server']):
 	window.SetTitle('FunkyChat - Client')
@@ -185,9 +185,5 @@ else:
 		address = '(Address Unavailable)'
 	window.SetTitle('FunkyChat - Host - ' + address)
 
-try:
-	window.Show()
-	app.MainLoop()
-except KeyboardInterrupt:
-	print('bruh')
-	exit()
+window.Show()
+app.MainLoop()
