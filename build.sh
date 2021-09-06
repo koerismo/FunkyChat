@@ -1,1 +1,1 @@
-py -m PyInstaller src/main.py
+py -m PyInstaller -n FunkyChat src/main.py
