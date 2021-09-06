@@ -4,11 +4,9 @@ import wx
 from uuid import uuid4
 
 import asyncio
+from threading import Thread
 import websockets
 import socket
-
-loop = asyncio.get_event_loop()
-async_tasks = []
 
 user = {}
 def initUser():
@@ -34,11 +32,16 @@ class CommunicationHandler():
 			print(f'{cL.LIGHT_WHITE}[SOCKET]{cL.LIGHT_GRAY}Received: {message}{cL.RESET}')
 			await connection.send('gaming')
 
-		async_tasks.append(websockets.serve( serve, "localhost", 81 ))
+		startServer = websockets.serve( serve, "localhost", 81 )
 		cL.logSucc('[SOCKET]',f'Hosting server on {socket.gethostbyname(socket.gethostname())}:81')
 
-		# asyncio.get_event_loop().run_until_complete(startServer)
-		# asyncio.get_event_loop().run_forever()
+		def setupServer():
+			loop = asyncio.new_event_loop()
+			loop.run_until_complete(startServer)
+			loop.run_forever()
+
+		self.thread = Thread(target=setupServer)
+		self.thread.start()
 
 	def startListener( self ):
 		def onMessage( ws, msg ):
@@ -99,16 +102,4 @@ cL.logSpec('[APP]', 'Initializing window...')
 app = wx.App()
 window = ChatWindow(None)
 window.Show()
-
-async def runMainLoop():
-	app.MainLoop()
-
-async_tasks.append(runMainLoop())
-
-async def main():
-	while True:
-		cL.logSpec('[APP]',f'Starting {len(async_tasks)} tasks...')
-		await asyncio.gather(*async_tasks)
-
-asyncio.get_event_loop().run_until_complete(main())
-asyncio.get_event_loop().run_forever()
+app.MainLoop()
