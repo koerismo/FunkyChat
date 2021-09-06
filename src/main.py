@@ -80,6 +80,7 @@ class CommunicationHandler():
 					window.appendMessageToBox( j['username'], j['message'] )
 				if ( j['type'] == 'welcome' ):
 					window.appendUserJoinMessage( j['username'] )
+					self.server.send_message_to_all( msg )
 			except BaseException as e:
 				cL.logErr( '[SOCKET]', 'An error occurred while attempting to deserialize a message: ' + str(e) )
 
