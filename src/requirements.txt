@@ -1,3 +1,4 @@
 # Requirements
 wxpython
-websockets
+websocket-client
+git+https://github.com/Pithikos/python-websocket-server

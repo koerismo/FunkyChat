@@ -5,6 +5,7 @@ from uuid import uuid4
 import json
 from threading import Thread
 from websocket_server import WebsocketServer
+import websocket
 
 localuser = {}
 def initUser():
@@ -19,6 +20,8 @@ def initUser():
 
 class CommunicationHandler():
 	def __init__( self, addr ):
+		self.client = None
+		self.server = None
 		if len(addr):
 			self.initListener()
 		else:
@@ -32,7 +35,7 @@ class CommunicationHandler():
 		def onConnection( con, serv ):
 			cL.logSucc('[SOCKET]','New connection')
 
-		self.server = WebsocketServer( 81, host='127.0.0.1' )
+		self.server = WebsocketServer( 81, host='0.0.0.0' )
 		self.server.set_fn_new_client(onConnection)
 		self.server.set_fn_message_received(onMessage)
 
@@ -42,24 +45,37 @@ class CommunicationHandler():
 			self.server.run_forever()
 		if ( self.client ):
 			cL.logSpec('[SOCKET]', 'Initializing client...')
+			self.client.run_forever()
 
 	def sendMessage( self, msg ):
-		self.server.send_message_to_all(json.dumps({
-			'username': localuser['name'],
-			'message': msg
-		}))
+		if self.server:
+			self.server.send_message_to_all(json.dumps({
+				'username': localuser['name'],
+				'message': msg
+			}))
+		else:
+			self.client.send( json.dumps({
+				'username': localuser['name'],
+				'message': msg
+			}))
 
 	def initListener( self ):
-		# self.client = simple_websocket.Client('ws://localhost:5000/echo')
 		def onMessage( ws, msg ):
 			cL.logSpec('[SOCKET]', f'Message received: {msg}')
+			try:
+				j = json.loads(msg)
+				window.appendMessageToBox( j['username'], j['message'] )
+			except BaseException as e:
+				cL.logErr('[SOCKET]', 'An error occurred while attempting to deserialize a message: ' + e)
 		def onError( ws, err ):
 			cL.logSpec('[SOCKET]', f'Connection error: {err}')
 		def onClose( ws, status, msg ):
 			cL.logSpec('[SOCKET]', 'Connection closed.')
 		def onOpen( ws ):
 			cL.logSpec('[SOCKET]', 'Connection opened.')
-		self.client = True
+
+		self.client = ws = websocket.WebSocketApp( f'ws://{localuser["server"]}:81', on_message=onMessage, on_error=onError, on_close=onClose, on_open=onOpen )
+
 
 class ChatWindow(ChatWindowBase):
 
@@ -109,12 +125,10 @@ socketHandler = CommunicationHandler(localuser['server'])
 
 # Initialize window
 
-def startApp():
-	cL.logSpec('[APP]', 'Initializing window...')
-	app = wx.App()
-	window = ChatWindow(None)
-	window.Show()
-	app.MainLoop()
-
 Thread(target=socketHandler.run,daemon=True).start()
-startApp()
+
+cL.logSpec('[APP]', 'Initializing window...')
+app = wx.App()
+window = ChatWindow(None)
+window.Show()
+app.MainLoop()
