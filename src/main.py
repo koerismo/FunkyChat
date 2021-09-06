@@ -36,8 +36,8 @@ class CommunicationHandler():
 				j = json.loads(msg)
 				if ( j['type'] == 'message' ):
 					window.appendMessageToBox( j['username'], j['message'] )
-				if ( j['type'] == 'welcome' ):
-					window.appendUserJoinMessage( j['username'] )
+				# if ( j['type'] == 'welcome' ):
+				#	window.appendUserJoinMessage( j['username'] )
 			except BaseException as e:
 				cL.logErr( '[SOCKET]', 'An error occurred while attempting to deserialize a message: ' + str(e) )
 
@@ -78,9 +78,9 @@ class CommunicationHandler():
 				j = json.loads(msg)
 				if ( j['type'] == 'message' ):
 					window.appendMessageToBox( j['username'], j['message'] )
-				if ( j['type'] == 'welcome' ):
-					window.appendUserJoinMessage( j['username'] )
-					self.server.send_message_to_all( msg )
+				# if ( j['type'] == 'welcome' ):
+				#	window.appendUserJoinMessage( j['username'] )
+				#	self.server.send_message_to_all( msg )
 			except BaseException as e:
 				cL.logErr( '[SOCKET]', 'An error occurred while attempting to deserialize a message: ' + str(e) )
 
@@ -93,10 +93,10 @@ class CommunicationHandler():
 
 		def onOpen( ws ):
 			cL.logSpec('[SOCKET]', 'Connection opened.')
-			self.client.send( json.dumps({
-				'username': localuser['name'],
-				'type': 'welcome'
-			}) )
+			# self.client.send( json.dumps({
+			# 	'username': localuser['name'],
+			# 	'type': 'welcome'
+			# }) )
 
 		self.client = ws = websocket.WebSocketApp( f'ws://{localuser["server"]}:81', on_message=onMessage, on_error=onError, on_close=onClose, on_open=onOpen )
 
@@ -135,6 +135,7 @@ class ChatWindow(ChatWindowBase):
 		self.text_rich.EndBold()
 		self.text_rich.MoveEnd()
 
+	'''
 	def appendUserJoinMessage( self, user ):
 		self.text_rich.BeginBold()
 		self.text_rich.BeginTextColour(wx.Colour(50,50,50))
@@ -142,6 +143,7 @@ class ChatWindow(ChatWindowBase):
 		self.text_rich.EndTextColour()
 		self.text_rich.EndBold()
 		self.text_rich.MoveEnd()
+	'''
 
 	def appendMessageToBox( self, author, txt ):
 		self.text_rich.BeginBold()
