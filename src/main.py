@@ -66,6 +66,7 @@ class CommunicationHandler():
 			}))
 
 	def initListener( self ):
+		
 		def onMessage( ws, msg ):
 			cL.logSpec('[SOCKET]', f'Message received: {msg}')
 			try:
@@ -73,10 +74,14 @@ class CommunicationHandler():
 				window.appendMessageToBox( j['username'], j['message'] )
 			except BaseException as e:
 				cL.logErr( '[SOCKET]', 'An error occurred while attempting to deserialize a message: ' + str(e) )
+
 		def onError( ws, err ):
 			cL.logSpec('[SOCKET]', f'Connection error: {err}')
+			
 		def onClose( ws, status, msg ):
 			cL.logSpec('[SOCKET]', 'Connection closed.')
+			window.setConnectionLost()
+
 		def onOpen( ws ):
 			cL.logSpec('[SOCKET]', 'Connection opened.')
 
@@ -104,6 +109,11 @@ class ChatWindow(ChatWindowBase):
 		socketHandler.sendMessage(txt)
 
 		cL.logSpec('[CHAT]', 'Message sent.')
+
+	def setConnectionLost( self ):
+		self.text_entry.Disable()
+		self.button_send.Disable()
+		self.SetTitle('FunkyChat - Connection Lost')
 
 	def appendMessageToBox( self, author, txt ):
 		self.text_rich.BeginBold()
@@ -148,5 +158,9 @@ else:
 		address = '(Address Unavailable)'
 	window.SetTitle('FunkyChat - Host - ' + address)
 
-window.Show()
-app.MainLoop()
+try:
+	window.Show()
+	app.MainLoop()
+except KeyboardInterrupt:
+	print('bruh')
+	exit()
