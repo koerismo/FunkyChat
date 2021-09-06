@@ -31,7 +31,12 @@ class CommunicationHandler():
 	def initServer( self ):
 
 		def onMessage( con, serv, msg ):
-			cL.logSucc('[SOCKET]','Received message: ' + msg)
+			cL.logSpec('[SOCKET]', f'Message received: {msg}')
+			try:
+				j = json.loads(msg)
+				window.appendMessageToBox( j['username'], j['message'] )
+			except BaseException as e:
+				cL.logErr( '[SOCKET]', 'An error occurred while attempting to deserialize a message: ', e )
 
 		def onConnection( con, serv ):
 			cL.logSucc('[SOCKET]','New connection')
@@ -67,7 +72,7 @@ class CommunicationHandler():
 				j = json.loads(msg)
 				window.appendMessageToBox( j['username'], j['message'] )
 			except BaseException as e:
-				cL.logErr('[SOCKET]', 'An error occurred while attempting to deserialize a message: ' + e)
+				cL.logErr( '[SOCKET]', 'An error occurred while attempting to deserialize a message: ', e )
 		def onError( ws, err ):
 			cL.logSpec('[SOCKET]', f'Connection error: {err}')
 		def onClose( ws, status, msg ):
