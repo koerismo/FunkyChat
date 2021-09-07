@@ -17,7 +17,7 @@ def get_local_address():
 			s.close()
 		return addr
 
-def scan_network():
+def scan_network( on_device_appended=lambda device:None, on_device_failed=lambda device:None ):
 	loc_addr = get_local_address()
 	target_addr = loc_addr[:loc_addr.rindex('.')] + '.1/24'
 	arp = ARP(pdst=target_addr)
@@ -36,13 +36,17 @@ def scan_network():
 			if not ans == 'WCHATPONG':
 				raise websocket.WebSocketBadStatusException
 			validServers.append(server)
-			print(f'{server} succeeded in connecting!')
+			on_device_appended(server)
 		except:
+			on_device_failed(server)
 			pass
 		finally:
 			w.close()
 
-	return validServers
+	return {
+		'found': servers,
+		'valid': validServers
+	}
 	
 
 	'''

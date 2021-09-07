@@ -27,11 +27,13 @@ def initUser():
 		cL.logSpec( '[APP]', 'Initializing network scan...' )
 		candidateServers = sv.scan_network()
 
-		if len(candidateServers):
-			server = candidateServers[0]
+		cL.logSucc( '[APP]', f'{len(candidateServers["valid"])}/{len(candidateServers["found"])} devices found as valid hosts.' )
+
+		if len(candidateServers['valid']):
+			server = candidateServers['valid'][0]
 		else:
 			cL.logWarn( '[APP]', 'No active hosts could be found! Resorting to manual entry.' )
-			server = input('Enter a server address to connect to. If there is not yet a server active, enter nothing.\n| ')
+			server = input('Enter a server address to connect to. If you would like to register as a server, enter nothing.\n| ')
 
 	localuser = {
 		'server': server,
@@ -111,19 +113,20 @@ class CommunicationHandler():
 				cL.logErr( '[SOCKET]', 'An error occurred while attempting to deserialize a message: ' + str(e) )
 
 		def onError( ws, err ):
-			cL.logSpec('[SOCKET]', f'Connection error: {err}')
+			cL.logErr('[SOCKET]', f'Connection error: {err}')
 			
 		def onClose( ws, status, msg ):
-			cL.logSpec('[SOCKET]', 'Connection closed.')
+			cL.logWarn('[SOCKET]', 'Connection closed.')
 			window.setConnectionLost()
 
 		def onOpen( ws ):
-			cL.logSpec('[SOCKET]', 'Connection opened.')
+			cL.logSucc('[SOCKET]', 'Connection opened.')
 			# self.client.send( json.dumps({
 			# 	'username': localuser['name'],
 			# 	'type': 'welcome'
 			# }) )
 
+		cL.logSpec('[SOCKET]', f'Initializing connection with  ws://{localuser["server"]}:81 ...')
 		self.client = ws = websocket.WebSocketApp( f'ws://{localuser["server"]}:81', on_message=onMessage, on_error=onError, on_close=onClose, on_open=onOpen )
 
 
