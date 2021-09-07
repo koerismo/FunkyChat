@@ -3,7 +3,7 @@ A funky little chat client made in python
 
 ---
 
-## Running from releases
+## Running from pre-built releases
 > Note: Due to a screen access bug, OSX builds are non-functional. To use on OSX, see **Running from source**.
 1. Go to the releases page
 2. Download the latest release
