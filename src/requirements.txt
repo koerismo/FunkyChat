@@ -2,3 +2,4 @@
 wxpython
 websocket-client
 git+https://github.com/Pithikos/python-websocket-server
+git+https://github.com/secdev/scapy

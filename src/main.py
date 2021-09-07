@@ -33,6 +33,12 @@ class CommunicationHandler():
 		def onMessage( con, serv, msg ):
 			cL.logSpec('[SOCKET]', f'Message received: {msg}')
 			try:
+
+				# Ping
+				if ( msg == 'WCHATPING' ):
+					self.server.send_message( con, 'WCHATPONG' )
+					return
+
 				j = json.loads(msg)
 				if ( j['type'] == 'message' ):
 					window.appendMessageToBox( j['username'], j['message'] )
