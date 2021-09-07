@@ -1,4 +1,5 @@
 from ui import FunkyChatWindow as ChatWindowBase
+import scanner as sv
 import cLogging as cL
 import wx
 from uuid import uuid4
@@ -12,7 +13,18 @@ localuser = {}
 def initUser():
 	global localuser
 
-	server = input('Enter a server address to connect to. If there is not yet a server active, enter nothing.\n| ')
+
+	cL.logSpec( '[APP]', 'Initializing network scan...' )
+
+	# Search the network for devices, then attempt to connect to them via websocket on port 81.
+	candidateServers = sv.scan_network()
+	server = None
+
+	if len(candidateServers):
+		server = candidateServers[0]
+	else:
+		cL.logWarn( '[APP]', 'No active hosts could be found! Resorting to manual entry.' )
+		server = input('Enter a server address to connect to. If there is not yet a server active, enter nothing.\n| ')
 
 	localuser = {
 		'server': server,
@@ -31,14 +43,15 @@ class CommunicationHandler():
 	def initServer( self ):
 
 		def onMessage( con, serv, msg ):
+
+			# Used by network search to check validity of device websocket
+			if ( msg == 'WCHATPING' ):
+				self.server.send_message( con, 'WCHATPONG' )
+				return
+
 			cL.logSpec('[SOCKET]', f'Message received: {msg}')
+
 			try:
-
-				# Ping
-				if ( msg == 'WCHATPING' ):
-					self.server.send_message( con, 'WCHATPONG' )
-					return
-
 				j = json.loads(msg)
 				if ( j['type'] == 'message' ):
 					window.appendMessageToBox( j['username'], j['message'] )

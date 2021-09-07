@@ -1,6 +1,9 @@
 import socket, subprocess
 import websocket
+import logging
 from scapy.all import ARP, Ether, srp
+
+logging.getLogger('scrapy').setLevel(logging.WARNING)
 
 def get_local_address():
 	with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
@@ -14,7 +17,7 @@ def get_local_address():
 			s.close()
 		return addr
 
-def scan_network(port):
+def scan_network():
 	loc_addr = get_local_address()
 	target_addr = loc_addr[:loc_addr.rindex('.')] + '.1/24'
 	arp = ARP(pdst=target_addr)
@@ -27,7 +30,7 @@ def scan_network(port):
 	for server in servers:
 		try:
 			w = websocket.WebSocket()
-			w.connect(f'ws://{server}:81',timeout=1)
+			w.connect(f'ws://{server}:81',timeout=0.5)
 			w.send('WCHATPING')
 			ans = w.recv()
 			if not ans == 'WCHATPONG':
@@ -35,12 +38,11 @@ def scan_network(port):
 			validServers.append(server)
 			print(f'{server} succeeded in connecting!')
 		except:
-			print(f'{server} failed to connect.')
 			pass
 		finally:
 			w.close()
 
-	print(validServers)
+	return validServers
 	
 
 	'''
@@ -52,5 +54,3 @@ def scan_network(port):
 		out, err = proc.communicate()
 		print(proc.returncode)
 	'''
-
-scan_network(0)
