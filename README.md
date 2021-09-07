@@ -13,7 +13,7 @@ A funky little chat client made in python
 2. Run `pip3 install -r src/requirements.txt` *(Optionally inside of a venv.)*
 3. Run `python3 src/main.py` to start the program after the modules have finished installing.
 
-### Building from source
+## Building from source
 1. Complete steps 1 and 2 of **"Running from source"**
 2. Run `pip3 install pyinstaller` to install `PyInstaller`
 3. Run `PyInstaller src/main.py` to build
