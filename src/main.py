@@ -127,7 +127,13 @@ class CommunicationHandler():
 			# }) )
 
 		cL.logSpec('[SOCKET]', f'Initializing connection with  ws://{localuser["server"]}:81 ...')
-		self.client = ws = websocket.WebSocketApp( f'ws://{localuser["server"]}:81', on_message=onMessage, on_error=onError, on_close=onClose, on_open=onOpen )
+
+		if ':' in localuser['server']:
+			targetIP = localuser['server']
+		else:
+			targetIP = f'ws://{localuser["server"]}:81'
+
+		self.client = ws = websocket.WebSocketApp( targetIP, on_message=onMessage, on_error=onError, on_close=onClose, on_open=onOpen )
 
 
 class ChatWindow(ChatWindowBase):
