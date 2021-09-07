@@ -13,18 +13,25 @@ localuser = {}
 def initUser():
 	global localuser
 
+	server = ''
+	beHost = None
+	inp = ''
 
-	cL.logSpec( '[APP]', 'Initializing network scan...' )
+	while not inp in ['y','n']:
+		inp = input('Register as server? [y/n] ').lower()
+	beHost = ( inp == 'y' )
+	
 
-	# Search the network for devices, then attempt to connect to them via websocket on port 81.
-	candidateServers = sv.scan_network()
-	server = None
+	if not beHost:
+		# Search the network for devices, then attempt to connect to them via websocket on port 81.
+		cL.logSpec( '[APP]', 'Initializing network scan...' )
+		candidateServers = sv.scan_network()
 
-	if len(candidateServers):
-		server = candidateServers[0]
-	else:
-		cL.logWarn( '[APP]', 'No active hosts could be found! Resorting to manual entry.' )
-		server = input('Enter a server address to connect to. If there is not yet a server active, enter nothing.\n| ')
+		if len(candidateServers):
+			server = candidateServers[0]
+		else:
+			cL.logWarn( '[APP]', 'No active hosts could be found! Resorting to manual entry.' )
+			server = input('Enter a server address to connect to. If there is not yet a server active, enter nothing.\n| ')
 
 	localuser = {
 		'server': server,
