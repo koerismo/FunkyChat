@@ -5,7 +5,7 @@ A funky little chat client made in python
 
 ## Running from pre-built releases
 > Note: Due to a screen access bug, OSX builds are non-functional. To use on OSX, see **Running from source**.
-1. Go to the releases page
+1. Go to [the releases page](https://github.com/koerismo/FunkyChat/releases/latest)
 2. Download the latest release
 3. Run the executable
 
