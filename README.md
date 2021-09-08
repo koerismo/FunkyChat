@@ -18,3 +18,4 @@ A funky little chat client made in python
 1. Complete steps 1 and 2 of **Running from source**
 2. Run `pip3 install pyinstaller` to install `PyInstaller`
 3. Run `PyInstaller -n FunkyChat --onefile src/main.py` to build
+*If you used a venv, `--paths "./venv/Lib/site-packages/"` must be added to the command above for it to function properly.*
